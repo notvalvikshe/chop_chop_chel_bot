@@ -11,6 +11,7 @@ cd /home/user/chopbot
 ```
 
 Или одной командой с локального Mac:
+
 ```bash
 ssh -i ~/.ssh/chopbot_deploy_key root@78.153.139.53 "cd /home/user/chopbot && <команда>"
 ```
@@ -20,31 +21,38 @@ ssh -i ~/.ssh/chopbot_deploy_key root@78.153.139.53 "cd /home/user/chopbot && <�
 ## 📊 Мониторинг состояния
 
 ### Статус контейнеров
+
 ```bash
 docker-compose -f docker-compose.prod.yml ps
 ```
 
 **Должно быть:**
+
 - `chopbot_postgres` - `Up` (healthy)
 - `chopbot_app` - `Up`
 
 ### Логи бота (в реальном времени)
+
 ```bash
 docker-compose -f docker-compose.prod.yml logs -f bot
 ```
+
 Выход: `Ctrl+C`
 
 ### Последние 50 строк логов
+
 ```bash
 docker-compose -f docker-compose.prod.yml logs --tail=50 bot
 ```
 
 ### Логи базы данных
+
 ```bash
 docker-compose -f docker-compose.prod.yml logs --tail=50 postgres
 ```
 
 ### Использование ресурсов
+
 ```bash
 # Все контейнеры
 docker stats
@@ -64,31 +72,37 @@ top
 ## 🔄 Управление ботом
 
 ### Перезапуск бота
+
 ```bash
 docker-compose -f docker-compose.prod.yml restart bot
 ```
 
 ### Полный перезапуск (бот + БД)
+
 ```bash
 docker-compose -f docker-compose.prod.yml restart
 ```
 
 ### Остановка
+
 ```bash
 docker-compose -f docker-compose.prod.yml stop
 ```
 
 ### Запуск
+
 ```bash
 docker-compose -f docker-compose.prod.yml up -d
 ```
 
 ### Остановка и удаление контейнеров (БД сохраняется!)
+
 ```bash
 docker-compose -f docker-compose.prod.yml down
 ```
 
 ### Пересборка и перезапуск
+
 ```bash
 docker-compose -f docker-compose.prod.yml up -d --build
 ```
@@ -100,6 +114,7 @@ docker-compose -f docker-compose.prod.yml up -d --build
 ### Ручной бэкап
 
 #### С локального Mac:
+
 ```bash
 # Создать бэкап
 ssh -i ~/.ssh/chopbot_deploy_key root@78.153.139.53 \
@@ -112,6 +127,7 @@ scp -i ~/.ssh/chopbot_deploy_key \
 ```
 
 #### На VPS:
+
 ```bash
 # Создать бэкап
 docker exec chopbot_postgres pg_dump -U postgres chopbot > backup_$(date +%Y%m%d_%H%M%S).sql
@@ -162,11 +178,13 @@ crontab -e
 ```
 
 Добавьте строку:
+
 ```
 0 3 * * * /root/backup_chopbot.sh >> /var/log/chopbot_backup.log 2>&1
 ```
 
 Проверка cron:
+
 ```bash
 crontab -l
 ```
@@ -176,11 +194,13 @@ crontab -l
 ## 🗄️ Работа с базой данных
 
 ### Подключение к PostgreSQL
+
 ```bash
 docker exec -it chopbot_postgres psql -U postgres -d chopbot
 ```
 
 **Внутри psql:**
+
 ```sql
 -- Список таблиц
 \dt
@@ -192,9 +212,9 @@ docker exec -it chopbot_postgres psql -U postgres -d chopbot
 SELECT COUNT(*) FROM users;
 
 -- Последние 10 пользователей
-SELECT id, telegram_id, first_name, yclients_phone, created_at 
-FROM users 
-ORDER BY created_at DESC 
+SELECT id, telegram_id, first_name, yclients_phone, created_at
+FROM users
+ORDER BY created_at DESC
 LIMIT 10;
 
 -- Выход
@@ -205,18 +225,18 @@ LIMIT 10;
 
 ```sql
 -- Все пользователи с контактами
-SELECT telegram_id, first_name, yclients_phone, yclients_email 
-FROM users 
+SELECT telegram_id, first_name, yclients_phone, yclients_email
+FROM users
 WHERE yclients_phone IS NOT NULL;
 
 -- Очистить телефон и email конкретного пользователя
-UPDATE users 
-SET yclients_phone = NULL, yclients_email = NULL 
+UPDATE users
+SET yclients_phone = NULL, yclients_email = NULL
 WHERE telegram_id = 123456789;
 
 -- Добавить пользователя в whitelist
-UPDATE users 
-SET in_whitelist = true 
+UPDATE users
+SET in_whitelist = true
 WHERE telegram_id = 123456789;
 ```
 
@@ -225,21 +245,25 @@ WHERE telegram_id = 123456789;
 ## 📈 Мониторинг через логи
 
 ### Просмотр ошибок
+
 ```bash
 docker-compose -f docker-compose.prod.yml logs bot | grep ERROR
 ```
 
 ### Просмотр запросов к YClients API
+
 ```bash
 docker-compose -f docker-compose.prod.yml logs bot | grep "YClientsApiService"
 ```
 
 ### Просмотр действий пользователей
+
 ```bash
 docker-compose -f docker-compose.prod.yml logs bot | grep "MessageLogger"
 ```
 
 ### Сохранить логи в файл
+
 ```bash
 docker-compose -f docker-compose.prod.yml logs --since 24h bot > bot_logs_$(date +%Y%m%d).txt
 ```
@@ -251,11 +275,13 @@ docker-compose -f docker-compose.prod.yml logs --since 24h bot > bot_logs_$(date
 ### Бот не отвечает
 
 1. **Проверить статус:**
+
    ```bash
    docker-compose -f docker-compose.prod.yml ps
    ```
 
 2. **Посмотреть логи:**
+
    ```bash
    docker-compose -f docker-compose.prod.yml logs --tail=50 bot
    ```
@@ -268,11 +294,13 @@ docker-compose -f docker-compose.prod.yml logs --since 24h bot > bot_logs_$(date
 ### База данных не подключается
 
 1. **Проверить статус PostgreSQL:**
+
    ```bash
    docker-compose -f docker-compose.prod.yml logs postgres
    ```
 
 2. **Проверить healthcheck:**
+
    ```bash
    docker inspect chopbot_postgres | grep -A 5 Health
    ```
@@ -336,6 +364,7 @@ chmod +x /root/check_chopbot.sh
 ```
 
 Добавьте в cron (проверка каждые 5 минут):
+
 ```bash
 */5 * * * * /root/check_chopbot.sh
 ```
@@ -345,6 +374,7 @@ chmod +x /root/check_chopbot.sh
 ## 🔐 Безопасность
 
 ### Просмотр активных подключений
+
 ```bash
 # SSH сессии
 who
@@ -357,11 +387,13 @@ history | tail -20
 ```
 
 ### Обновление системы
+
 ```bash
 apt update && apt upgrade -y
 ```
 
 ### Проверка Docker версии
+
 ```bash
 docker --version
 docker-compose --version
@@ -383,11 +415,13 @@ alias chopbot-backup='ssh -i ~/.ssh/chopbot_deploy_key root@78.153.139.53 "docke
 ```
 
 После добавления:
+
 ```bash
 source ~/.zshrc
 ```
 
 Теперь можно использовать:
+
 ```bash
 chopbot-logs      # Просмотр логов
 chopbot-status    # Статус
@@ -403,6 +437,7 @@ chopbot-backup    # Создать бэкап
 - **Логи деплоя**: Проверяйте в Actions после каждого push
 
 **Важные файлы на VPS:**
+
 - `.env` - `/home/user/chopbot/.env`
 - Логи бота - `docker-compose logs bot`
 - База данных - внутри контейнера `chopbot_postgres`
