@@ -1,0 +1,52 @@
+version: "3.9"
+
+services:
+  postgres:
+    container_name: chopbot_postgres
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - chopbot_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  bot:
+    container_name: chopbot_app
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      - ENV=${ENV}
+      - PORT=${PORT}
+      - DB_PORT=5432
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - DATABASE_URL=postgresql://${DB_USERNAME}:${DB_PASSWORD}@postgres:5432/${DB_NAME}
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+      - YCLIENTS_PARTNER_TOKEN=${YCLIENTS_PARTNER_TOKEN}
+      - YCLIENTS_USER_TOKEN=${YCLIENTS_USER_TOKEN}
+      - YCLIENTS_PARTNER_ID=${YCLIENTS_PARTNER_ID}
+      - YCLIENTS_COMPANY_ID=${YCLIENTS_COMPANY_ID}
+    networks:
+      - chopbot_network
+
+networks:
+  chopbot_network:
+    driver: bridge
+
+volumes:
+  postgres_data:
