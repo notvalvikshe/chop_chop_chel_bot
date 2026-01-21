@@ -104,6 +104,15 @@ export class BookingService {
     // Создаем запись в YClients
     const appointment = await this.yclientsApi.createRecord(request, userToken);
 
+    this.logger.debug(`YClients API response: ${JSON.stringify(appointment)}`);
+
+    if (!appointment?.id) {
+      this.logger.error(
+        `YClients returned appointment without ID: ${JSON.stringify(appointment)}`,
+      );
+      throw new Error("Failed to create booking: no record ID returned");
+    }
+
     // Получаем информацию о услуге и мастере для сохранения в БД
     const services = await this.getAvailableServices();
     const service = services.find((s) => s.id === serviceId);
