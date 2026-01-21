@@ -47,12 +47,12 @@ DB_PASSWORD=ваш_безопасный_пароль_измените_это
 DB_NAME=chopbot
 DATABASE_URL=postgresql://postgres:ваш_безопасный_пароль_измените_это@postgres:5432/chopbot
 
-TELEGRAM_TOKEN=7423040613:AAEb8kTwuFvpkDDKdlfZ15yZragQuI0L9T4
+TELEGRAM_TOKEN=ваш_токен_бота
 
-YCLIENTS_PARTNER_TOKEN=wc45w255rk6e7h6j5mdr
-YCLIENTS_USER_TOKEN=b852eeb6be180eecc6391d14871d5cf4
-YCLIENTS_PARTNER_ID=13505
-YCLIENTS_COMPANY_ID=1718848
+YCLIENTS_PARTNER_TOKEN=ваш_partner_token
+YCLIENTS_USER_TOKEN=ваш_user_token
+YCLIENTS_PARTNER_ID=ваш_partner_id
+YCLIENTS_COMPANY_ID=ваш_company_id
 ```
 
 **ВАЖНО:** Измените `DB_PASSWORD` на безопасный пароль!
