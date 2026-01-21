@@ -106,9 +106,15 @@ export class BookingService {
 
     this.logger.debug(`YClients API response: ${JSON.stringify(appointment)}`);
 
-    if (!appointment?.id) {
+    // YClients API возвращает массив с объектами, где record_id - это ID записи
+    const recordId =
+      Array.isArray(appointment) && appointment.length > 0
+        ? appointment[0].record_id
+        : (appointment as any).record_id;
+
+    if (!recordId) {
       this.logger.error(
-        `YClients returned appointment without ID: ${JSON.stringify(appointment)}`,
+        `YClients returned appointment without record_id: ${JSON.stringify(appointment)}`,
       );
       throw new Error("Failed to create booking: no record ID returned");
     }
@@ -129,7 +135,7 @@ export class BookingService {
     // Сохраняем в локальную БД
     await this.bookingRepository.create({
       userId: user.id,
-      yclientsRecordId: appointment.id,
+      yclientsRecordId: recordId,
       serviceId,
       serviceName: service?.title || "Услуга",
       staffId,
@@ -138,7 +144,7 @@ export class BookingService {
     });
 
     this.logger.log(
-      `Booking created: user=${user.id}, record=${appointment.id}, service=${serviceId}`,
+      `Booking created: user=${user.id}, record=${recordId}, service=${serviceId}`,
     );
 
     return appointment;
