@@ -334,11 +334,14 @@ export class BookingScene {
         );
       } else {
         // Сохраняем телефон и показываем подтверждение
-        await this.userRepository.updateContactInfo(
+        const updatedUser = await this.userRepository.updateContactInfo(
           ctx.user.id,
           phone,
           ctx.user.yclientsEmail,
         );
+        if (updatedUser) {
+          ctx.user = updatedUser;
+        }
         await ctx.reply("✅ Телефон сохранен!");
         await this.showConfirmation(ctx);
       }
@@ -359,7 +362,14 @@ export class BookingScene {
 
       // Сохраняем контактные данные
       const phone = ctx.scene.session.booking.phone || ctx.user.yclientsPhone!;
-      await this.userRepository.updateContactInfo(ctx.user.id, phone, text);
+      const updatedUser = await this.userRepository.updateContactInfo(
+        ctx.user.id,
+        phone,
+        text,
+      );
+      if (updatedUser) {
+        ctx.user = updatedUser;
+      }
 
       await ctx.reply("✅ Email сохранен!");
       await this.showConfirmation(ctx);
@@ -415,10 +425,18 @@ export class BookingScene {
       ],
     ];
 
-    await ctx.editMessageText(message, {
-      parse_mode: "HTML",
-      ...Markup.inlineKeyboard(buttons),
-    });
+    // Проверяем, есть ли callbackQuery (редактируем сообщение) или нет (отправляем новое)
+    if (ctx.callbackQuery) {
+      await ctx.editMessageText(message, {
+        parse_mode: "HTML",
+        ...Markup.inlineKeyboard(buttons),
+      });
+    } else {
+      await ctx.reply(message, {
+        parse_mode: "HTML",
+        ...Markup.inlineKeyboard(buttons),
+      });
+    }
   }
 
   @Action("confirm")
