@@ -601,19 +601,21 @@ export class BookingScene {
 
         message += `<b>${record.services.map((s) => s.title).join(", ")}</b>\n`;
         message += `📅 ${dateStr} в ${timeStr}\n`;
-        
+
         // Добавляем мастера, если есть
-        const staffName = (record as any).staff_name || (record as any).staffName;
+        const staffName =
+          (record as any).staff_name || (record as any).staffName;
         if (staffName) {
           message += `👨‍💼 Мастер: ${staffName}\n`;
         }
-        
+
         // Добавляем филиал, если есть
-        const companyName = (record as any).company_name || (record as any).companyName;
+        const companyName =
+          (record as any).company_name || (record as any).companyName;
         if (companyName) {
           message += `🏢 Филиал: ${companyName}\n`;
         }
-        
+
         if (record.comment) {
           message += `💬 ${record.comment}\n`;
         }

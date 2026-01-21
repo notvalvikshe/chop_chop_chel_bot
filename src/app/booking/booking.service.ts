@@ -162,44 +162,47 @@ export class BookingService {
     const bookings = await this.bookingRepository.getActiveBookings(userId);
 
     // Преобразуем записи из БД в формат Appointment для совместимости
-    return bookings.map((booking) => ({
-      id: booking.yclientsRecordId,
-      company_id: booking.companyId,
-      staff_id: booking.staffId || 0,
-      services: [
-        {
-          id: booking.serviceId,
-          title: booking.serviceName,
-          cost: 0,
-        },
-      ],
-      datetime: booking.datetime.toISOString(),
-      client: {
-        id: userId,
-        name: "",
-        phone: "",
-      },
-      create_date: booking.createdAt.toISOString(),
-      comment: "",
-      online: true,
-      attendance: 0,
-      confirmed: 1,
-      seance_length: 0,
-      length: 0,
-      sms_before: 0,
-      sms_now: 0,
-      sms_now_text: "",
-      email_now: 0,
-      notified: 0,
-      master_request: 0,
-      api_id: "",
-      from_url: "",
-      record_labels: "",
-      activity_id: 0,
-      // Добавляем дополнительные поля для отображения в боте
-      staff_name: booking.staffName,
-      company_name: booking.companyName,
-    } as any));
+    return bookings.map(
+      (booking) =>
+        ({
+          id: booking.yclientsRecordId,
+          company_id: booking.companyId,
+          staff_id: booking.staffId || 0,
+          services: [
+            {
+              id: booking.serviceId,
+              title: booking.serviceName,
+              cost: 0,
+            },
+          ],
+          datetime: booking.datetime.toISOString(),
+          client: {
+            id: userId,
+            name: "",
+            phone: "",
+          },
+          create_date: booking.createdAt.toISOString(),
+          comment: "",
+          online: true,
+          attendance: 0,
+          confirmed: 1,
+          seance_length: 0,
+          length: 0,
+          sms_before: 0,
+          sms_now: 0,
+          sms_now_text: "",
+          email_now: 0,
+          notified: 0,
+          master_request: 0,
+          api_id: "",
+          from_url: "",
+          record_labels: "",
+          activity_id: 0,
+          // Добавляем дополнительные поля для отображения в боте
+          staff_name: booking.staffName,
+          company_name: booking.companyName,
+        }) as any,
+    );
   }
 
   /**
