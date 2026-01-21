@@ -6,6 +6,8 @@ import { bookingSchema } from "../../db/schema";
 export interface CreateBookingData {
   userId: number;
   yclientsRecordId: number;
+  companyId: number;
+  companyName: string;
   serviceId: number;
   serviceName: string;
   staffId?: number;
@@ -17,6 +19,8 @@ export interface Booking {
   id: number;
   userId: number;
   yclientsRecordId: number;
+  companyId: number;
+  companyName: string;
   serviceId: number;
   serviceName: string;
   staffId: number | null;
@@ -40,6 +44,8 @@ export class BookingRepository {
       .values({
         userId: data.userId,
         yclientsRecordId: data.yclientsRecordId,
+        companyId: data.companyId,
+        companyName: data.companyName,
         serviceId: data.serviceId,
         serviceName: data.serviceName,
         staffId: data.staffId || null,

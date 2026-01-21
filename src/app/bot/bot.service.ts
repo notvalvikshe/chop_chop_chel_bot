@@ -106,11 +106,24 @@ export class BotService {
         });
 
         message += `<b>${record.services.map((s) => s.title).join(", ")}</b>\n`;
-        message += ` ${dateStr} в ${timeStr}\n`;
+        message += `📅 ${dateStr} в ${timeStr}\n`;
+        
+        // Добавляем мастера, если есть
+        const staffName = (record as any).staff_name || (record as any).staffName;
+        if (staffName) {
+          message += `👨‍💼 Мастер: ${staffName}\n`;
+        }
+        
+        // Добавляем филиал, если есть
+        const companyName = (record as any).company_name || (record as any).companyName;
+        if (companyName) {
+          message += `🏢 Филиал: ${companyName}\n`;
+        }
+        
         if (record.comment) {
           message += `💬 ${record.comment}\n`;
         }
-        message += `ID: ${record.id}\n\n`;
+        message += `\n`;
       }
 
       await ctx.reply(message, { parse_mode: "HTML", ...mainMenuKeyboard() });

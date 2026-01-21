@@ -42,6 +42,8 @@ export const bookingSchema = pgTable("bookings", {
   yclientsRecordId: integer("yclients_record_id").notNull(),
 
   // Детали записи
+  companyId: integer("company_id").notNull(),
+  companyName: text("company_name").notNull(),
   serviceId: integer("service_id").notNull(),
   serviceName: text("service_name").notNull(),
   staffId: integer("staff_id"),

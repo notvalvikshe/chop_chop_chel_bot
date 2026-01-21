@@ -123,6 +123,9 @@ export class BookingService {
     const services = await this.getAvailableServices();
     const service = services.find((s) => s.id === serviceId);
 
+    // Получаем название филиала
+    const company = await this.yclientsApi.getCompany(this.companyId);
+
     let staffName: string | undefined;
     if (staffId) {
       const staff = await this.yclientsApi.listStaff(this.companyId, [
@@ -136,6 +139,8 @@ export class BookingService {
     await this.bookingRepository.create({
       userId: user.id,
       yclientsRecordId: recordId,
+      companyId: this.companyId,
+      companyName: company.title,
       serviceId,
       serviceName: service?.title || "Услуга",
       staffId,
@@ -159,7 +164,7 @@ export class BookingService {
     // Преобразуем записи из БД в формат Appointment для совместимости
     return bookings.map((booking) => ({
       id: booking.yclientsRecordId,
-      company_id: this.companyId,
+      company_id: booking.companyId,
       staff_id: booking.staffId || 0,
       services: [
         {
@@ -191,7 +196,10 @@ export class BookingService {
       from_url: "",
       record_labels: "",
       activity_id: 0,
-    }));
+      // Добавляем дополнительные поля для отображения в боте
+      staff_name: booking.staffName,
+      company_name: booking.companyName,
+    } as any));
   }
 
   /**
