@@ -12,30 +12,34 @@ describe("BookingService", () => {
 
   beforeEach(async () => {
     mockYClientsApi = {
-      listServices: jest
+      listServices: jest.fn().mockResolvedValue([
+        {
+          id: 1,
+          title: "Стрижка",
+          duration: 1800,
+          price_min: 500,
+          price_max: 1000,
+          is_online: true,
+        },
+      ]),
+      listStaff: jest
         .fn()
         .mockResolvedValue([
           {
             id: 1,
-            title: "Стрижка",
-            duration: 1800,
-            price_min: 500,
-            price_max: 1000,
-            is_online: true,
+            name: "Петр",
+            specialization: "Барбер",
+            fired: 0,
+            hidden: 0,
           },
         ]),
-      listStaff: jest
-        .fn()
-        .mockResolvedValue([{ id: 1, name: "Петр", specialization: "Барбер", fired: 0, hidden: 0 }]),
-      getFreeTimes: jest
-        .fn()
-        .mockResolvedValue([
-          {
-            time: "10:00",
-            datetime: "2026-01-22T10:00:00+05:00",
-            seance_length: 30,
-          },
-        ]),
+      getFreeTimes: jest.fn().mockResolvedValue([
+        {
+          time: "10:00",
+          datetime: "2026-01-22T10:00:00+05:00",
+          seance_length: 30,
+        },
+      ]),
       createRecord: jest.fn().mockResolvedValue([{ id: 0, record_id: 123456 }]),
     };
 
@@ -91,8 +95,8 @@ describe("BookingService", () => {
     });
   });
 
-  describe('getStaffForService', () => {
-    it('should return list of staff for service', async () => {
+  describe("getStaffForService", () => {
+    it("should return list of staff for service", async () => {
       const staff = await service.getStaffForService(1);
 
       expect(staff).toHaveLength(1);
@@ -123,7 +127,7 @@ describe("BookingService", () => {
       const result = await service.createBooking(
         1,
         1,
-        '2026-01-22T10:00:00+05:00',
+        "2026-01-22T10:00:00+05:00",
         user as any,
       );
 
