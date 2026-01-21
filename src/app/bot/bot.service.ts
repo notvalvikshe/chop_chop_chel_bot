@@ -106,8 +106,7 @@ export class BotService {
         });
 
         message += `<b>${record.services.map((s) => s.title).join(", ")}</b>\n`;
-        message += `👨‍💼 ${record.staff?.name || "Любой мастер"}\n`;
-        message += `📅 ${dateStr} в ${timeStr}\n`;
+        message += ` ${dateStr} в ${timeStr}\n`;
         if (record.comment) {
           message += `💬 ${record.comment}\n`;
         }

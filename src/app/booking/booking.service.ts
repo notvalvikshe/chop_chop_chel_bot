@@ -107,10 +107,12 @@ export class BookingService {
     // Получаем информацию о услуге и мастере для сохранения в БД
     const services = await this.getAvailableServices();
     const service = services.find((s) => s.id === serviceId);
-    
+
     let staffName: string | undefined;
     if (staffId) {
-      const staff = await this.yclientsApi.listStaff(this.companyId, [serviceId]);
+      const staff = await this.yclientsApi.listStaff(this.companyId, [
+        serviceId,
+      ]);
       const selectedStaff = staff.find((s) => s.id === staffId);
       staffName = selectedStaff?.name;
     }
@@ -144,10 +146,6 @@ export class BookingService {
       id: booking.yclientsRecordId,
       company_id: this.companyId,
       staff_id: booking.staffId || 0,
-      staff: {
-        id: booking.staffId || 0,
-        name: booking.staffName || "Любой мастер",
-      },
       services: [
         {
           id: booking.serviceId,
@@ -156,6 +154,11 @@ export class BookingService {
         },
       ],
       datetime: booking.datetime.toISOString(),
+      client: {
+        id: userId,
+        name: "",
+        phone: "",
+      },
       create_date: booking.createdAt.toISOString(),
       comment: "",
       online: true,

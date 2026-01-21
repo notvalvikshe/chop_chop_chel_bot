@@ -57,7 +57,7 @@ export class BookingRepository {
    */
   async getActiveBookings(userId: number): Promise<Booking[]> {
     const now = new Date();
-    
+
     const bookings = await this.db.db
       .select()
       .from(bookingSchema)
