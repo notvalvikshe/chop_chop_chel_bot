@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   postgres:
     container_name: chopbot_postgres
@@ -41,6 +39,9 @@ services:
       - YCLIENTS_USER_TOKEN=${YCLIENTS_USER_TOKEN}
       - YCLIENTS_PARTNER_ID=${YCLIENTS_PARTNER_ID}
       - YCLIENTS_COMPANY_ID=${YCLIENTS_COMPANY_ID}
+      - YCLIENTS_BOOK_FORM_ID=${YCLIENTS_BOOK_FORM_ID}
+      - YCLIENTS_LOGIN=${YCLIENTS_LOGIN}
+      - YCLIENTS_PASSWORD=${YCLIENTS_PASSWORD}
     networks:
       - chopbot_network
 
