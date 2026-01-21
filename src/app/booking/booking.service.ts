@@ -123,9 +123,6 @@ export class BookingService {
     const services = await this.getAvailableServices();
     const service = services.find((s) => s.id === serviceId);
 
-    // Получаем название филиала
-    const company = await this.yclientsApi.getCompany(this.companyId);
-
     let staffName: string | undefined;
     if (staffId) {
       const staff = await this.yclientsApi.listStaff(this.companyId, [
@@ -140,7 +137,7 @@ export class BookingService {
       userId: user.id,
       yclientsRecordId: recordId,
       companyId: this.companyId,
-      companyName: company.title,
+      companyName: "ЧОП ЧОП", // Название филиала (можно вынести в env если будет больше филиалов)
       serviceId,
       serviceName: service?.title || "Услуга",
       staffId,
