@@ -310,17 +310,28 @@ export class BookingScene {
 
     const text = ctx.message.text;
 
-    // Если пользователь нажимает кнопку главного меню - выходим из сцены
-    const menuButtons = [
-      "💇 Услуги и цены",
-      "📋 Мои записи",
-      "📅 Записаться",
-      "ℹ️ Помощь",
-    ];
-
-    if (menuButtons.includes(text)) {
-      await ctx.reply("❌ Запись отменена", mainMenuKeyboard());
+    // Если пользователь нажимает кнопку главного меню - выходим из сцены и выполняем действие
+    if (text === "💇 Услуги и цены") {
       await ctx.scene.leave();
+      await this.showServicesInfo(ctx);
+      return;
+    }
+
+    if (text === "📋 Мои записи") {
+      await ctx.scene.leave();
+      await this.showMyBookings(ctx);
+      return;
+    }
+
+    if (text === "📅 Записаться") {
+      // Если уже в сцене записи, просто начинаем заново
+      await ctx.scene.reenter();
+      return;
+    }
+
+    if (text === "ℹ️ Помощь") {
+      await ctx.scene.leave();
+      await this.showHelp(ctx);
       return;
     }
 
@@ -532,5 +543,107 @@ export class BookingScene {
   async onBackToDates(@Ctx() ctx: MyContext): Promise<void> {
     await ctx.answerCbQuery();
     await this.showDates(ctx);
+  }
+
+  // Вспомогательные методы для кнопок меню
+  private async showServicesInfo(@Ctx() ctx: MyContext): Promise<void> {
+    try {
+      const services = await this.bookingService.getAvailableServices();
+
+      if (services.length === 0) {
+        await ctx.reply(
+          "К сожалению, пока нет доступных услуг.",
+          mainMenuKeyboard(),
+        );
+        return;
+      }
+
+      let message = "💇 <b>Наши услуги:</b>\n\n";
+      for (const service of services) {
+        const duration = Math.round(service.duration / 60);
+        const priceRange =
+          service.price_min === service.price_max
+            ? `${service.price_min} ₽`
+            : `${service.price_min}-${service.price_max} ₽`;
+
+        message += `<b>${service.title}</b>\n`;
+        message += `💰 ${priceRange}\n`;
+        message += `⏱ ${duration} мин\n\n`;
+      }
+
+      await ctx.reply(message, { parse_mode: "HTML", ...mainMenuKeyboard() });
+    } catch (error) {
+      this.logger.error("Failed to fetch services", error);
+      await ctx.reply(
+        "Произошла ошибка при загрузке услуг. Попробуйте позже.",
+        mainMenuKeyboard(),
+      );
+    }
+  }
+
+  private async showMyBookings(@Ctx() ctx: MyContext): Promise<void> {
+    if (!ctx.user.yclientsUserToken) {
+      await ctx.reply(
+        "Для просмотра записей необходимо авторизоваться.\n\n" +
+          "🔜 Функция авторизации в разработке.",
+        mainMenuKeyboard(),
+      );
+      return;
+    }
+
+    try {
+      const now = new Date();
+      const futureDate = new Date(now);
+      futureDate.setMonth(futureDate.getMonth() + 1);
+
+      const records = await this.bookingService.getUserBookings(
+        ctx.user.yclientsUserToken,
+        now.toISOString().split("T")[0],
+        futureDate.toISOString().split("T")[0],
+      );
+
+      if (records.length === 0) {
+        await ctx.reply("У вас пока нет активных записей.", mainMenuKeyboard());
+        return;
+      }
+
+      let message = "📋 <b>Ваши записи:</b>\n\n";
+      for (const record of records) {
+        const date = new Date(record.datetime);
+        const dateStr = date.toLocaleDateString("ru-RU");
+        const timeStr = date.toLocaleTimeString("ru-RU", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+        message += `<b>${record.services.map((s) => s.title).join(", ")}</b>\n`;
+        message += `📅 ${dateStr} в ${timeStr}\n`;
+        if (record.comment) {
+          message += `💬 ${record.comment}\n`;
+        }
+        message += `ID: ${record.id}\n\n`;
+      }
+
+      await ctx.reply(message, { parse_mode: "HTML", ...mainMenuKeyboard() });
+    } catch (error) {
+      this.logger.error("Failed to fetch user bookings", error);
+      await ctx.reply(
+        "Произошла ошибка при загрузке записей. Попробуйте позже.",
+        mainMenuKeyboard(),
+      );
+    }
+  }
+
+  private async showHelp(@Ctx() ctx: MyContext): Promise<void> {
+    await ctx.reply(
+      "ℹ️ <b>Помощь по боту</b>\n\n" +
+        "<b>Доступные команды:</b>\n" +
+        "/services - посмотреть услуги и цены\n" +
+        "/book - записаться на стрижку\n" +
+        "/my_bookings - посмотреть свои записи\n" +
+        "/help - эта справка\n\n" +
+        "Также можно использовать кнопки в меню.",
+      { parse_mode: "HTML", ...mainMenuKeyboard() },
+    );
   }
 }
