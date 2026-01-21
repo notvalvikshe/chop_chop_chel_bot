@@ -53,6 +53,7 @@ nano .env
 ```
 
 Заполните все переменные окружения:
+
 - `DB_PASSWORD` - безопасный пароль для PostgreSQL
 - `TELEGRAM_TOKEN` - токен вашего Telegram бота
 - `YCLIENTS_*` - токены и ID для YClients API
@@ -186,6 +187,7 @@ docker exec -i chopbot_postgres psql -U postgres chopbot < backup_20260121_12345
 ### Рекомендуемые настройки
 
 1. **Изменить SSH порт** (необязательно, но рекомендуется):
+
 ```bash
 sudo nano /etc/ssh/sshd_config
 # Изменить Port 22 на другой (например, Port 2222)
@@ -193,12 +195,14 @@ sudo systemctl restart sshd
 ```
 
 2. **Настроить Firewall**:
+
 ```bash
 sudo ufw allow 2222/tcp  # SSH (если изменили порт)
 sudo ufw enable
 ```
 
 3. **Отключить вход по паролю** (только SSH ключи):
+
 ```bash
 sudo nano /etc/ssh/sshd_config
 # Установить: PasswordAuthentication no
@@ -206,6 +210,7 @@ sudo systemctl restart sshd
 ```
 
 4. **Регулярные обновления**:
+
 ```bash
 sudo apt update && sudo apt upgrade -y
 ```

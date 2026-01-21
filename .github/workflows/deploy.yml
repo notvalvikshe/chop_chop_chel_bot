@@ -9,7 +9,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -23,18 +23,18 @@ jobs:
           port: ${{ secrets.VPS_PORT }}
           script: |
             cd ${{ secrets.VPS_PROJECT_PATH }}
-            
+
             # Pull latest changes
             git pull origin main || git pull origin master
-            
+
             # Stop containers
             docker compose -f docker-compose.prod.yml down
-            
+
             # Build and start containers
             docker compose -f docker-compose.prod.yml up -d --build
-            
+
             # Clean up old images
             docker image prune -f
-            
+
             # Show status
             docker compose -f docker-compose.prod.yml ps
