@@ -1,7 +1,7 @@
 import { homedir } from 'node:os';
 import { join } from 'node:path';
-import { defineConfig } from 'drizzle-kit';
 import { env } from 'node:process';
+import { defineConfig } from 'drizzle-kit';
 
 export default defineConfig({
 	schema: './src/db/schema.ts', // Файл схемы

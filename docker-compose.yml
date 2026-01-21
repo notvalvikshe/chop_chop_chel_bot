@@ -1,21 +1,21 @@
 version: "3.9"
 services:
   postgres:
-    container_name: postgres
-    image: postgres:13.3
+    container_name: chopbot_postgres
+    image: postgres:16-alpine
     environment:
-      POSTGRES_DB: "tg-bot"
-      POSTGRES_USER: "admin"
-      POSTGRES_PASSWORD: "admin"
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
-      - .:/docker-entrypoint-initdb.d
+      - postgres_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
-  redis:
-    image: redis
-    container_name: redis
-    restart: always
-    environment:
-      - REDIS_PASSWORD=test
-    ports:
-      - "6379:6379"
+      - "${DB_PORT}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { UserRepository } from './user.repository';
+import { objectify } from 'radash';
 import { User as TelegramUser } from 'typegram';
 import { User } from './user';
-import { objectify } from 'radash';
+import { UserRepository } from './user.repository';
 
 export enum ResultType {
 	Dictionary = 'dictionary',
@@ -15,7 +15,7 @@ type ResultFormatOptions = {
 
 @Injectable()
 export class UserService {
-	constructor(readonly repository: UserRepository) { }
+	constructor(readonly repository: UserRepository) {}
 
 	public async getUserByTelegramUser({ id, first_name, last_name, username }: TelegramUser): Promise<User> {
 		const user = await this.repository.findByTelegramId(id);

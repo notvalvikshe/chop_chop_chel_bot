@@ -54,10 +54,10 @@ _(RU: модель данных)_
 Entities used in the bot:[page:1]
 
 - **Company**: branch providing services (`id`, `title`, `address`, `phone`).
-- **ServiceCategory**: group of services for a company (`id`, `title`).
-- **Service**: concrete service (`id`, `title`, `length`, `price_min`, `price_max`, `allow_online`).[page:1]
-- **Staff**: employee (`id`, `name`, `specialization`, `online_booking_enabled`).
-- **FreeTimeSlot**: date/time slot available for booking.
+- **ServiceCategory**: group of services for a company (`id`, `title`, `weight`, `booking_title`, `price_min`, `price_max`).
+- **Service**: concrete service (`id`, `title`, `duration` (seconds), `price_min`, `price_max`, `is_online`, `category_id`, `active`, `prepaid`).[page:1]
+- **Staff**: employee (`id`, `name`, `specialization`, `avatar`, `fired`, `hidden`, `is_online`, `is_bookable`, `rating`).
+- **FreeTimeSlot**: date/time slot available for booking (ISO 8601 string).
 - **Client**: user booking services (`id`, `name`, `phone`, `email`).
 - **Record (Booking/Visit)**: appointment (`id`, `company_id`, `staff_id`, `services`, `datetime`, `client`).[page:1]
 
@@ -436,12 +436,10 @@ _(RU: без вариантов, один набор конкретных руч
 _(RU: законченное описание флоу)_
 
 1. **User enters phone in Telegram**.
-
    - Bot calls `POST /api/v1/auth` with body `{ "login": "<phone>" }`.
    - If response `data.flow == "login"`, SMS was sent and `uuid` is provided.[page:1]
 
 2. **User receives SMS code and enters it in Telegram**.
-
    - Bot calls `POST /api/v1/auth` with body `{ "login": "<phone>", "code": "<sms_code>", "uuid": "<uuid>" }`.
    - On HTTP 201 with `data.user_token`, auth is successful.[page:1]
 
@@ -512,3 +510,42 @@ _(RU: что модель делает / не делает)_
 - If some behavior is unclear, prefer leaving it out rather than guessing payloads.
 - Follow company rules reflected in API responses (no‑cancel windows, prepayment, etc.).
 - Keep user‑facing messages concise; reuse API error messages when they make sense.[page:1]
+
+---
+
+## 10. Actual API field mappings (validated 2026-01-21)
+
+**Service fields (from `/api/v1/company/{id}/services`):**
+
+- `id`, `title`, `duration` (seconds, NOT `length`)
+- `price_min`, `price_max`, `discount`
+- `is_online` (boolean, NOT `allow_online`)
+- `active` (1 = active)
+- `category_id`
+- `prepaid` ("forbidden" | "allowed" | "required")
+- `comment`, `weight`
+
+**Staff fields (from `/api/v1/company/{id}/staff`):**
+
+- `id`, `name`, `specialization`
+- `fired` (0 = active, 1 = fired), `is_fired` (boolean)
+- `hidden` (0 = visible, 1 = hidden)
+- `is_online` (boolean)
+- `is_bookable` (boolean)
+- `avatar`, `avatar_big`
+- `rating`, `information`
+- Note: `online_booking_enabled` field may be `null`, use `is_bookable` instead
+
+**ServiceCategory fields (from `/api/v1/company/{id}/service_categories`):**
+
+- `id`, `title`, `booking_title`
+- `weight`, `api_id`
+- `price_min`, `price_max`
+- `staff` (array of staff IDs)
+
+**Free times (from `/api/v1/book_times`):**
+
+- Returns array of ISO 8601 datetime strings
+- Required params: `company_id`, `service_ids`, `from`, `to`
+- Optional: `staff_id`
+- Must include `partner_id` query parameter

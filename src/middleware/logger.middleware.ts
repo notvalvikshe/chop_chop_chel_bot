@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common';
-import { MyContext } from '../app/bot/helpers/bot-types';
 import { Message } from 'typegram';
+import { MyContext } from '../app/bot/helpers/bot-types';
 
 export class LoggerMiddleware {
 	private logger = new Logger('MessageLogger');

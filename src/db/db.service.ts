@@ -1,10 +1,10 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import 'dotenv/config';
-import { drizzle, NodePgClient, NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { Env } from '../env.validator';
 import { Logger as DBLogger } from 'drizzle-orm/logger';
+import { NodePgClient, NodePgDatabase, drizzle } from 'drizzle-orm/node-postgres';
 import { highlight } from 'sql-highlight';
+import { Env } from '../env.validator';
 class MyLogger implements DBLogger {
 	constructor(private logger: Logger) {}
 	logQuery(query: string, params: unknown[]): void {

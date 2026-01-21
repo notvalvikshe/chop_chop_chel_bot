@@ -7,7 +7,7 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"ignore": []
+		"ignore": ["dist/**", "node_modules/**", "pnpm-lock.yaml", "*.log", "session.json"]
 	},
 	"formatter": {
 		"enabled": true,

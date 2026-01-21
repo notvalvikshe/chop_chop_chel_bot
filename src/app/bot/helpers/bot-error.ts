@@ -1,5 +1,8 @@
 export class BotError extends Error {
-	constructor(message: string, public type: 'System' | 'User') {
+	constructor(
+		message: string,
+		public type: 'System' | 'User',
+	) {
 		super(message);
 	}
 }

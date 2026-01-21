@@ -1,6 +1,6 @@
-import { Markup } from 'telegraf';
 import { cluster } from 'radash';
-import { ReplyKeyboardMarkup, InlineKeyboardMarkup, InlineKeyboardButton } from 'typegram';
+import { Markup } from 'telegraf';
+import { InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardMarkup } from 'typegram';
 
 const SPECIAL_CHARS = ['\\', '_', '*', '[', ']', '(', ')', '~', '`', '>', '<', '&', '#', '+', '-', '=', '|', '{', '}', '.', '!'];
 
