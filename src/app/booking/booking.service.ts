@@ -10,6 +10,7 @@ import type {
   TimeSlot,
 } from "../../yclients/yclients.types";
 import type { User } from "../user/user";
+import { BookingRepository } from "./booking.repository";
 
 /**
  * Сервис для работы с бронированием через YClients API
@@ -22,6 +23,7 @@ export class BookingService {
   constructor(
     private readonly yclientsApi: YClientsApiService,
     private readonly config: ConfigService<Env, true>,
+    private readonly bookingRepository: BookingRepository,
   ) {
     this.companyId = this.config.get("YCLIENTS_COMPANY_ID");
   }
@@ -99,25 +101,79 @@ export class BookingService {
       ],
     };
 
-    return this.yclientsApi.createRecord(request, userToken);
+    // Создаем запись в YClients
+    const appointment = await this.yclientsApi.createRecord(request, userToken);
+
+    // Получаем информацию о услуге и мастере для сохранения в БД
+    const services = await this.getAvailableServices();
+    const service = services.find((s) => s.id === serviceId);
+    
+    let staffName: string | undefined;
+    if (staffId) {
+      const staff = await this.yclientsApi.listStaff(this.companyId, [serviceId]);
+      const selectedStaff = staff.find((s) => s.id === staffId);
+      staffName = selectedStaff?.name;
+    }
+
+    // Сохраняем в локальную БД
+    await this.bookingRepository.create({
+      userId: user.id,
+      yclientsRecordId: appointment.id,
+      serviceId,
+      serviceName: service?.title || "Услуга",
+      staffId,
+      staffName,
+      datetime: new Date(datetime),
+    });
+
+    this.logger.log(
+      `Booking created: user=${user.id}, record=${appointment.id}, service=${serviceId}`,
+    );
+
+    return appointment;
   }
 
   /**
-   * Получить все записи пользователя
+   * Получить все записи пользователя из локальной БД
    */
-  async getUserBookings(
-    userToken: string,
-    from?: string,
-    to?: string,
-  ): Promise<Appointment[]> {
-    return this.yclientsApi.getUserRecords(
-      {
-        company_id: this.companyId,
-        from,
-        to,
+  async getUserBookings(userId: number): Promise<Appointment[]> {
+    const bookings = await this.bookingRepository.getActiveBookings(userId);
+
+    // Преобразуем записи из БД в формат Appointment для совместимости
+    return bookings.map((booking) => ({
+      id: booking.yclientsRecordId,
+      company_id: this.companyId,
+      staff_id: booking.staffId || 0,
+      staff: {
+        id: booking.staffId || 0,
+        name: booking.staffName || "Любой мастер",
       },
-      userToken,
-    );
+      services: [
+        {
+          id: booking.serviceId,
+          title: booking.serviceName,
+          cost: 0,
+        },
+      ],
+      datetime: booking.datetime.toISOString(),
+      create_date: booking.createdAt.toISOString(),
+      comment: "",
+      online: true,
+      attendance: 0,
+      confirmed: 1,
+      seance_length: 0,
+      length: 0,
+      sms_before: 0,
+      sms_now: 0,
+      sms_now_text: "",
+      email_now: 0,
+      notified: 0,
+      master_request: 0,
+      api_id: "",
+      from_url: "",
+      record_labels: "",
+      activity_id: 0,
+    }));
   }
 
   /**

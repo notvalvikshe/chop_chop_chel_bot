@@ -582,25 +582,8 @@ export class BookingScene {
   }
 
   private async showMyBookings(@Ctx() ctx: MyContext): Promise<void> {
-    if (!ctx.user.yclientsUserToken) {
-      await ctx.reply(
-        "Для просмотра записей необходимо авторизоваться.\n\n" +
-          "🔜 Функция авторизации в разработке.",
-        mainMenuKeyboard(),
-      );
-      return;
-    }
-
     try {
-      const now = new Date();
-      const futureDate = new Date(now);
-      futureDate.setMonth(futureDate.getMonth() + 1);
-
-      const records = await this.bookingService.getUserBookings(
-        ctx.user.yclientsUserToken,
-        now.toISOString().split("T")[0],
-        futureDate.toISOString().split("T")[0],
-      );
+      const records = await this.bookingService.getUserBookings(ctx.user.id);
 
       if (records.length === 0) {
         await ctx.reply("У вас пока нет активных записей.", mainMenuKeyboard());
@@ -617,7 +600,7 @@ export class BookingScene {
         });
 
         message += `<b>${record.services.map((s) => s.title).join(", ")}</b>\n`;
-        message += `📅 ${dateStr} в ${timeStr}\n`;
+        message += ` ${dateStr} в ${timeStr}\n`;
         if (record.comment) {
           message += `💬 ${record.comment}\n`;
         }

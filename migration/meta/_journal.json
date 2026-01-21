@@ -8,6 +8,13 @@
       "when": 1768911923729,
       "tag": "0000_overjoyed_talkback",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1769004437159,
+      "tag": "0001_brainy_pride",
+      "breakpoints": true
     }
   ]
 }
