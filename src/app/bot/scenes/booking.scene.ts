@@ -310,6 +310,20 @@ export class BookingScene {
 
     const text = ctx.message.text;
 
+    // Если пользователь нажимает кнопку главного меню - выходим из сцены
+    const menuButtons = [
+      "💇 Услуги и цены",
+      "📋 Мои записи",
+      "📅 Записаться",
+      "ℹ️ Помощь",
+    ];
+
+    if (menuButtons.includes(text)) {
+      await ctx.reply("❌ Запись отменена", mainMenuKeyboard());
+      await ctx.scene.leave();
+      return;
+    }
+
     // Обработка ввода телефона
     if (ctx.scene.session.booking.awaitingPhone) {
       const phoneRegex = /^(\+7|8|7)?(\d{10})$/;
