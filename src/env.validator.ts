@@ -40,6 +40,9 @@ export const envSchema = z.object({
 	YCLIENTS_PARTNER_ID: z.string().min(1).transform(Number),
 	YCLIENTS_BOOK_FORM_ID: z.string().min(1).transform(Number),
 	YCLIENTS_COMPANY_ID: z.string().min(1).transform(Number),
+
+	// Admin settings
+	DEFAULT_ADMIN: z.string().optional().default('https://t.me/AltorEgo'),
 });
 
 export class Env extends createZodDto(envSchema) {}

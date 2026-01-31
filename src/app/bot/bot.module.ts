@@ -4,6 +4,7 @@ import { TelegrafModule } from 'nestjs-telegraf';
 import { session } from 'telegraf';
 import { Env } from '../../env.validator';
 import { BookingModule } from '../booking/booking.module';
+import { SettingsModule } from '../settings/settings.module';
 import { UserModule } from '../user/user.module';
 import { BotService } from './bot.service';
 import { BookingScene } from './scenes/booking.scene';
@@ -22,6 +23,7 @@ import { BookingScene } from './scenes/booking.scene';
 		}),
 		UserModule,
 		BookingModule,
+		SettingsModule,
 	],
 	providers: [BotService, BookingScene],
 })

@@ -1,10 +1,21 @@
 import { Markup, type Markup as MarkupType } from 'telegraf';
 
-export const mainMenuKeyboard = (): ReturnType<typeof Markup.keyboard> =>
-	Markup.keyboard([
+export interface MainMenuOptions {
+	showAdminButton?: boolean;
+}
+
+export const mainMenuKeyboard = (options: MainMenuOptions = {}): ReturnType<typeof Markup.keyboard> => {
+	const rows = [
 		[{ text: '📋 Мои записи' }, { text: '📅 Записаться' }],
 		[{ text: '💇 Услуги и цены' }, { text: 'ℹ️ Помощь' }],
-	]).resize();
+	];
+
+	if (options.showAdminButton) {
+		rows.push([{ text: '📞 Позвать админа' }]);
+	}
+
+	return Markup.keyboard(rows).resize();
+};
 
 export const cancelKeyboard = (): ReturnType<typeof Markup.keyboard> =>
 	Markup.keyboard([['❌ Отмена']])

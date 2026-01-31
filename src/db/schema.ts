@@ -51,3 +51,14 @@ export const bookingSchema = pgTable('bookings', {
 });
 
 export type BookingSchema = typeof bookingSchema;
+
+// Таблица для хранения настроек бота
+export const settingsSchema = pgTable('settings', {
+	id: serial('id').primaryKey(),
+	key: text('key').unique().notNull(),
+	value: text('value').notNull(),
+	createdAt: timestamp('created_at').defaultNow().notNull(),
+	updatedAt: timestamp('updated_at').defaultNow().notNull(),
+});
+
+export type SettingsSchema = typeof settingsSchema;

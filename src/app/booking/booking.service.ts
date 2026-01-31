@@ -2,7 +2,15 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Env } from '../../env.validator';
 import { YClientsApiService } from '../../yclients/yclients-api.service';
-import type { Appointment, CreateRecordRequest, Service, Staff, TimeSlot } from '../../yclients/yclients.types';
+import type {
+	Appointment,
+	CreateRecordRequest,
+	CreateRecordResponse,
+	ExtendedAppointment,
+	Service,
+	Staff,
+	TimeSlot,
+} from '../../yclients/yclients.types';
 import type { User } from '../user/user';
 import { BookingRepository } from './booking.repository';
 
@@ -69,7 +77,7 @@ export class BookingService {
 		datetime: string,
 		user: User,
 		userToken?: string,
-	): Promise<Appointment> {
+	): Promise<CreateRecordResponse> {
 		const request: CreateRecordRequest = {
 			phone: user.yclientsPhone || '79000000000',
 			fullname: `${user.firstName} ${user.secondName || ''}`.trim(),
@@ -85,15 +93,15 @@ export class BookingService {
 		};
 
 		// Создаем запись в YClients
-		const appointment = await this.yclientsApi.createRecord(request, userToken);
+		const response = await this.yclientsApi.createRecord(request, userToken);
 
-		this.logger.debug(`YClients API response: ${JSON.stringify(appointment)}`);
+		this.logger.debug(`YClients API response: ${JSON.stringify(response)}`);
 
 		// YClients API возвращает массив с объектами, где record_id - это ID записи
-		const recordId = Array.isArray(appointment) && appointment.length > 0 ? appointment[0].record_id : (appointment as any).record_id;
+		const recordId = response.length > 0 ? response[0].record_id : undefined;
 
 		if (!recordId) {
-			this.logger.error(`YClients returned appointment without record_id: ${JSON.stringify(appointment)}`);
+			this.logger.error(`YClients returned response without record_id: ${JSON.stringify(response)}`);
 			throw new Error('Failed to create booking: no record ID returned');
 		}
 
@@ -123,56 +131,40 @@ export class BookingService {
 
 		this.logger.log(`Booking created: user=${user.id}, record=${recordId}, service=${serviceId}`);
 
-		return appointment;
+		return response[0];
 	}
 
 	/**
 	 * Получить все записи пользователя из локальной БД
 	 */
-	async getUserBookings(userId: number): Promise<Appointment[]> {
+	async getUserBookings(userId: number): Promise<ExtendedAppointment[]> {
 		const bookings = await this.bookingRepository.getActiveBookings(userId);
 
-		// Преобразуем записи из БД в формат Appointment для совместимости
+		// Преобразуем записи из БД в формат ExtendedAppointment
 		return bookings.map(
-			(booking) =>
-				({
-					id: booking.yclientsRecordId,
-					company_id: booking.companyId,
-					staff_id: booking.staffId || 0,
-					services: [
-						{
-							id: booking.serviceId,
-							title: booking.serviceName,
-							cost: 0,
-						},
-					],
-					datetime: booking.datetime.toISOString(),
-					client: {
-						id: userId,
-						name: '',
-						phone: '',
+			(booking): ExtendedAppointment => ({
+				id: booking.yclientsRecordId,
+				company_id: booking.companyId,
+				staff_id: booking.staffId || 0,
+				services: [
+					{
+						id: booking.serviceId,
+						title: booking.serviceName,
 					},
-					create_date: booking.createdAt.toISOString(),
-					comment: '',
-					online: true,
-					attendance: 0,
-					confirmed: 1,
-					seance_length: 0,
-					length: 0,
-					sms_before: 0,
-					sms_now: 0,
-					sms_now_text: '',
-					email_now: 0,
-					notified: 0,
-					master_request: 0,
-					api_id: '',
-					from_url: '',
-					record_labels: '',
-					activity_id: 0,
-					// Добавляем дополнительные поля для отображения в боте
-					staff_name: booking.staffName,
-					company_name: booking.companyName,
-				}) as any,
+				],
+				datetime: booking.datetime.toISOString(),
+				client: {
+					id: userId,
+					name: '',
+					phone: '',
+				},
+				create_date: booking.createdAt.toISOString(),
+				comment: '',
+				length: 0,
+				// Дополнительные поля для отображения в боте
+				staff_name: booking.staffName,
+				company_name: booking.companyName,
+			}),
 		);
 	}
 

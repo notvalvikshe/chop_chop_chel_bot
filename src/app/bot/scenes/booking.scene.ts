@@ -280,7 +280,7 @@ export class BookingScene {
 				return;
 			}
 
-			const phone = '7' + match[2];
+			const phone = `7${match[2]}`;
 			ctx.scene.session.booking.phone = phone;
 			ctx.scene.session.booking.awaitingPhone = false;
 
@@ -313,7 +313,7 @@ export class BookingScene {
 			ctx.scene.session.booking.awaitingEmail = false;
 
 			// Сохраняем контактные данные
-			const phone = ctx.scene.session.booking.phone || ctx.user.yclientsPhone!;
+			const phone = ctx.scene.session.booking.phone || ctx.user.yclientsPhone || '';
 			const updatedUser = await this.userRepository.updateContactInfo(ctx.user.id, phone, text);
 			if (updatedUser) {
 				ctx.user = updatedUser;
@@ -405,10 +405,7 @@ export class BookingScene {
 			const selectedService = ctx.scene.session.services?.find((s: Service) => s.id === serviceId);
 
 			await ctx.reply(
-				`✅ <b>Запись успешно создана!</b>\n\n` +
-					`📅 ${dateStr} в ${timeStr}\n` +
-					`💇 ${selectedService?.title || 'Услуга'}\n\n` +
-					`Ждём вас! 😊`,
+				`✅ <b>Запись успешно создана!</b>\n\n📅 ${dateStr} в ${timeStr}\n💇 ${selectedService?.title || 'Услуга'}\n\nЖдём вас! 😊`,
 				{ parse_mode: 'HTML', ...mainMenuKeyboard() },
 			);
 
@@ -499,21 +496,19 @@ export class BookingScene {
 				message += `📅 ${dateStr} в ${timeStr}\n`;
 
 				// Добавляем мастера, если есть
-				const staffName = (record as any).staff_name || (record as any).staffName;
-				if (staffName) {
-					message += `👨‍💼 Мастер: ${staffName}\n`;
+				if (record.staff_name) {
+					message += `👨‍💼 Мастер: ${record.staff_name}\n`;
 				}
 
 				// Добавляем филиал, если есть
-				const companyName = (record as any).company_name || (record as any).companyName;
-				if (companyName) {
-					message += `🏢 Филиал: ${companyName}\n`;
+				if (record.company_name) {
+					message += `🏢 Филиал: ${record.company_name}\n`;
 				}
 
 				if (record.comment) {
 					message += `💬 ${record.comment}\n`;
 				}
-				message += `\n`;
+				message += '\n';
 			}
 
 			await ctx.reply(message, { parse_mode: 'HTML', ...mainMenuKeyboard() });

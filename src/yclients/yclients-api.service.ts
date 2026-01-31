@@ -9,6 +9,7 @@ import type {
 	BookFormConfig,
 	Company,
 	CreateRecordRequest,
+	CreateRecordResponse,
 	GetFreeTimesParams,
 	GetUserRecordsParams,
 	Service,
@@ -206,12 +207,16 @@ export class YClientsApiService {
 	/**
 	 * Создать новую запись (бронирование)
 	 */
-	async createRecord(request: CreateRecordRequest, userToken?: string): Promise<Appointment> {
-		const response = await this.httpClient.post<YClientsApiResponse<Appointment>>(`/api/v1/book_record/${this.companyId}`, request, {
-			headers: {
-				Authorization: this.getAuthHeader(userToken || this.userToken),
+	async createRecord(request: CreateRecordRequest, userToken?: string): Promise<CreateRecordResponse[]> {
+		const response = await this.httpClient.post<YClientsApiResponse<CreateRecordResponse[]>>(
+			`/api/v1/book_record/${this.companyId}`,
+			request,
+			{
+				headers: {
+					Authorization: this.getAuthHeader(userToken || this.userToken),
+				},
 			},
-		});
+		);
 		return response.data.data;
 	}
 

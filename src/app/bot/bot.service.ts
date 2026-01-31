@@ -1,8 +1,9 @@
 import { Logger } from '@nestjs/common';
-import { Command, Ctx, Hears, InjectBot, Start, Update } from 'nestjs-telegraf';
+import { Command, Ctx, Hears, InjectBot, On, Start, Update } from 'nestjs-telegraf';
 import { Telegraf } from 'telegraf';
 import { LoggerMiddleware } from '../../middleware/logger.middleware';
 import { BookingService } from '../booking/booking.service';
+import { SettingsService } from '../settings/settings.service';
 import { UserService } from '../user/user.service';
 import { MyContext } from './helpers/bot-types';
 import { mainMenuKeyboard } from './keyboards/main.keyboard';
@@ -15,6 +16,7 @@ export class BotService {
 		@InjectBot() private bot: Telegraf<MyContext>,
 		readonly userService: UserService,
 		readonly bookingService: BookingService,
+		readonly settingsService: SettingsService,
 	) {
 		this.bot.telegram.setMyCommands([
 			{ command: '/start', description: 'Запуск бота' },
@@ -39,12 +41,18 @@ export class BotService {
 		};
 	}
 
+	private async getKeyboardOptions() {
+		const adminLink = await this.settingsService.getAdminChatLink();
+		return { showAdminButton: !!adminLink };
+	}
+
 	@Start()
 	async onStart(@Ctx() ctx: MyContext): Promise<void> {
 		const name = ctx.user?.firstName || 'пользователь';
+		const keyboardOptions = await this.getKeyboardOptions();
 		await ctx.reply(
 			`👋 Привет, ${name}!\n\nЯ бот для онлайн-записи на стрижку.\n\nВыбери действие в меню ниже или используй команды:\n/services - посмотреть услуги и цены\n/book - записаться на стрижку\n/my_bookings - посмотреть свои записи`,
-			mainMenuKeyboard(),
+			mainMenuKeyboard(keyboardOptions),
 		);
 	}
 
@@ -107,15 +115,13 @@ export class BotService {
 				message += `📅 ${dateStr} в ${timeStr}\n`;
 
 				// Добавляем мастера, если есть
-				const staffName = (record as any).staff_name || (record as any).staffName;
-				if (staffName) {
-					message += `👨‍💼 Мастер: ${staffName}\n`;
+				if (record.staff_name) {
+					message += `👨‍💼 Мастер: ${record.staff_name}\n`;
 				}
 
 				// Добавляем филиал, если есть
-				const companyName = (record as any).company_name || (record as any).companyName;
-				if (companyName) {
-					message += `🏢 Филиал: ${companyName}\n`;
+				if (record.company_name) {
+					message += `🏢 Филиал: ${record.company_name}\n`;
 				}
 
 				if (record.comment) {
@@ -134,6 +140,7 @@ export class BotService {
 	@Command('help')
 	@Hears('ℹ️ Помощь')
 	async onHelp(@Ctx() ctx: MyContext): Promise<void> {
+		const keyboardOptions = await this.getKeyboardOptions();
 		await ctx.reply(
 			'ℹ️ <b>Помощь по боту</b>\n\n' +
 				'<b>Доступные команды:</b>\n' +
@@ -142,7 +149,42 @@ export class BotService {
 				'/my_bookings - посмотреть свои записи\n' +
 				'/help - эта справка\n\n' +
 				'Также можно использовать кнопки в меню.',
-			{ parse_mode: 'HTML', ...mainMenuKeyboard() },
+			{ parse_mode: 'HTML', ...mainMenuKeyboard(keyboardOptions) },
 		);
+	}
+
+	@Hears('📞 Позвать админа')
+	async onCallAdmin(@Ctx() ctx: MyContext): Promise<void> {
+		const adminLink = await this.settingsService.getAdminChatLink();
+		const keyboardOptions = await this.getKeyboardOptions();
+
+		if (!adminLink) {
+			await ctx.reply('К сожалению, связь с админом временно недоступна.', mainMenuKeyboard(keyboardOptions));
+			return;
+		}
+
+		await ctx.reply(`📞 Для связи с администратором перейдите по ссылке:\n\n${adminLink}`, mainMenuKeyboard(keyboardOptions));
+	}
+
+	@On('text')
+	async onUnknownMessage(@Ctx() ctx: MyContext): Promise<void> {
+		const keyboardOptions = await this.getKeyboardOptions();
+		const adminLink = await this.settingsService.getAdminChatLink();
+
+		let message =
+			'🤔 Не понял команду. Вот что я умею:\n\n' +
+			'<b>Доступные команды:</b>\n' +
+			'/start - запустить бота\n' +
+			'/services - посмотреть услуги и цены\n' +
+			'/book - записаться на стрижку\n' +
+			'/my_bookings - посмотреть свои записи\n' +
+			'/help - помощь\n\n' +
+			'Также можно использовать кнопки в меню.';
+
+		if (adminLink) {
+			message += `\n\n📞 Связаться с админом: ${adminLink}`;
+		}
+
+		await ctx.reply(message, { parse_mode: 'HTML', ...mainMenuKeyboard(keyboardOptions) });
 	}
 }

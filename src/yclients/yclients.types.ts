@@ -101,6 +101,18 @@ export interface Appointment {
 	create_date?: string;
 }
 
+// Расширенный тип Appointment с дополнительными полями для бота
+export interface ExtendedAppointment extends Appointment {
+	staff_name?: string | null;
+	company_name?: string | null;
+}
+
+// Тип ответа от YClients API при создании записи
+export interface CreateRecordResponse {
+	id: number;
+	record_id: number;
+}
+
 // Requests
 export interface CreateRecordRequest {
 	phone: string;
