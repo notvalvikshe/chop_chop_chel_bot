@@ -1,9 +1,9 @@
-import { Module } from '@nestjs/common';
-import { SettingsRepository } from './settings.repository';
-import { SettingsService } from './settings.service';
+import { Module } from "@nestjs/common";
+import { SettingsRepository } from "./settings.repository";
+import { SettingsService } from "./settings.service";
 
 @Module({
-	providers: [SettingsService, SettingsRepository],
-	exports: [SettingsService],
+  providers: [SettingsService, SettingsRepository],
+  exports: [SettingsService],
 })
 export class SettingsModule {}

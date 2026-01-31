@@ -132,6 +132,7 @@
 Файл: `src/app/user/user.ts`.
 
 **Основные поля:**
+
 - `id` — внутренний ID пользователя в системе.
 - `telegramId` — уникальный ID пользователя Telegram.
 - `firstName`, `secondName`, `nickname` — данные профиля.
@@ -139,15 +140,18 @@
 - `inWhitelist` — флаг, используется для ограничений доступа.
 
 **YClients интеграция:**
+
 - `yclientsUserToken` — токен пользователя YClients после SMS-авторизации.
 - `yclientsUserId` — ID пользователя в YClients.
 - `yclientsPhone` — телефон, с которым пользователь авторизован в YClients.
 - `yclientsEmail` — email пользователя для связи.
 
 **Методы:**
+
 - `get name()` — возвращает отображаемое имя: nickname или "firstName secondName".
 
 **Конструктор:**
+
 - Принимает `UserSchemaType` (тип из Drizzle схемы) и создаёт доменную модель.
 
 ### 7.3 UserRepository
@@ -175,6 +179,7 @@
   - `getUserByIds(ids, options)` — возвращает либо массив, либо словарь `id -> User` (через `ResultType` и `objectify`).
 
 **Enum ResultType:**
+
 - `Array` — возвращает массив пользователей.
 - `Dictionary` — возвращает объект вида `{ [userId]: User }`.
 

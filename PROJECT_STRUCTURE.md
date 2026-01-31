@@ -230,11 +230,12 @@ docker compose -f docker-compose.prod.yml restart bot
 5. Закоммитить изменения с описательным сообщением
 
 **Пример хорошего commit message:**
+
 ```
 feat: add notification service for user messaging
 
 - Added NotificationService with scheduled messaging
-- Support for batch sending with rate limiting  
+- Support for batch sending with rate limiting
 - Updated docs/architecture.md and PROJECT_STRUCTURE.md
 ```
 
